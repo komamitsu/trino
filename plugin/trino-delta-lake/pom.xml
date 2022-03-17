@@ -171,6 +171,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Trino SPI -->
         <dependency>
             <groupId>io.trino</groupId>
@@ -411,6 +417,7 @@
                                 <exclude>**/TestDeltaLakeAdlsConnectorSmokeTest.java</exclude>
                                 <exclude>**/TestDeltaLakeGlueMetastore.java</exclude>
                                 <exclude>**/TestDelta*FailureRecoveryTest.java</exclude>
+                                <exclude>**/TestDeltaLakeSharedGlueMetastore.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -442,6 +449,7 @@
                                 <include>**/TestDeltaLakeAdlsStorage.java</include>
                                 <include>**/TestDeltaLakeAdlsConnectorSmokeTest.java</include>
                                 <include>**/TestDeltaLakeGlueMetastore.java</include>
+                                <include>**/TestDeltaLakeSharedGlueMetastore.java</include>
                             </includes>
                         </configuration>
                     </plugin>
