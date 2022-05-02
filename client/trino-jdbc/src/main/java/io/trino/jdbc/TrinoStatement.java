@@ -271,8 +271,9 @@ public class TrinoStatement
             // FIXME: The ugly replacements
             rewrittenSql = new CustomRewriter().rewrite(sql.replace("[", "").replace("]", ""));
         } catch (SqlParseException e) {
-            logger.logMethodCall("Statement", "EXCEPTION", e.getMessage());
-            throw new RuntimeException(e);
+            String msg = String.format("SQL: %s, MESSAGE: %s", sql, e.getMessage());
+            logger.logMethodCall("Statement", "EXCEPTION", msg);
+            throw new RuntimeException(msg, e);
         }
         try {
             client = connection().startQuery(rewrittenSql, getStatementSessionProperties());

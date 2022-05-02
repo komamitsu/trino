@@ -36,6 +36,9 @@ import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Planner;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 public class CustomRewriter
 {
@@ -136,6 +139,8 @@ public class CustomRewriter
         }
     }
 
+    private final Pattern PATTERN_PREPARE = Pattern.compile("((?:PREPARE|prepare)\\s+\\w+\\s+(?:FROM|from)\\s+)(.*)", Pattern.DOTALL);
+    private final Pattern PATTERN_EXECUTE = Pattern.compile("((?:EXECUTE|execute)\\s+)(.*)", Pattern.DOTALL);
     public String rewrite(String origSql) throws SqlParseException {
         SchemaPlus schema = Frameworks.createRootSchema(true);
         FrameworkConfig config = Frameworks.newConfigBuilder()
@@ -150,9 +155,27 @@ public class CustomRewriter
                 ).build();
         Planner planner = Frameworks.getPlanner(config);
 
-        String sql = origSql.replace("[", "").replace("]", "");
+        if (PATTERN_EXECUTE.matcher(origSql).find()) {
+            return origSql;
+        }
+        // FIXME
+        if (!origSql.contains("[") && !origSql.contains("]")) {
+            return origSql;
+        }
 
-        SqlNode node = planner.parse(sql);
+        String escapedPrefixSql = null;
+        Matcher matcher = PATTERN_PREPARE.matcher(origSql);
+        String sql;
+        if (matcher.find()) {
+            escapedPrefixSql = matcher.group(1);
+            sql = matcher.group(2);
+        }
+        else {
+            sql = origSql;
+        }
+
+        // TODO: Fix this naive way
+        SqlNode node = planner.parse(sql.replace("[", "").replace("]", ""));
         RelDataTypeFactory typeFactory = new JavaTypeFactoryImpl(config.getTypeSystem());
         SqlRewriter rewriter = new SqlRewriter(config.getOperatorTable(),
                 new CalciteCatalogReader(
@@ -165,7 +188,7 @@ public class CustomRewriter
                 config.getSqlValidatorConfig());
 
         SqlNode rewritten = rewriter.rewrite(node.accept(new SqlVisitor()));
-        return rewritten.toSqlString(
+        String rewrittenSqlStr = rewritten.toSqlString(
                 (transform) ->
                     transform.withDialect(PrestoSqlDialect.DEFAULT)
                             .withAlwaysUseParentheses(false)
@@ -173,5 +196,12 @@ public class CustomRewriter
                             .withClauseStartsLine(false)
                             .withClauseEndsLine(false)
         ).toString();
+
+        if (escapedPrefixSql == null) {
+            return rewrittenSqlStr;
+        }
+        else {
+            return escapedPrefixSql + rewrittenSqlStr;
+        }
     }
 }
