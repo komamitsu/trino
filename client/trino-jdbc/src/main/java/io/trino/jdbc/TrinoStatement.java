@@ -18,6 +18,7 @@ import com.google.common.primitives.Ints;
 import io.trino.client.ClientException;
 import io.trino.client.QueryStatusInfo;
 import io.trino.client.StatementClient;
+import org.apache.calcite.sql.parser.SqlParseException;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -265,8 +266,16 @@ public class TrinoStatement
 
         StatementClient client = null;
         TrinoResultSet resultSet = null;
+        String rewrittenSql;
         try {
-            client = connection().startQuery(sql, getStatementSessionProperties());
+            // FIXME: The ugly replacements
+            rewrittenSql = new CustomRewriter().rewrite(sql.replace("[", "").replace("]", ""));
+        } catch (SqlParseException e) {
+            logger.logMethodCall("Statement", "EXCEPTION", e.getMessage());
+            throw new RuntimeException(e);
+        }
+        try {
+            client = connection().startQuery(rewrittenSql, getStatementSessionProperties());
             if (client.isFinished()) {
                 QueryStatusInfo finalStatusInfo = client.finalStatusInfo();
                 if (finalStatusInfo.getError() != null) {
