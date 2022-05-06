@@ -133,6 +133,7 @@ public class CustomRewriter
                                 pos
                         );
                     }
+                    break;
                 }
             }
             return super.visit(call);

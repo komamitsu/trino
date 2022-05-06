@@ -269,7 +269,7 @@ public class TrinoStatement
         String rewrittenSql;
         try {
             // FIXME: The ugly replacements
-            rewrittenSql = new CustomRewriter().rewrite(sql.replace("[", "").replace("]", ""));
+            rewrittenSql = new CustomRewriter().rewrite(sql);
         } catch (SqlParseException e) {
             String msg = String.format("SQL: %s, MESSAGE: %s", sql, e.getMessage());
             logger.logMethodCall("Statement", "EXCEPTION", msg);
