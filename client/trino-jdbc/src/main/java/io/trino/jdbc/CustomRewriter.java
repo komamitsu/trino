@@ -42,6 +42,10 @@ import java.util.regex.Pattern;
 
 public class CustomRewriter
 {
+    private final Pattern PATTERN_PREPARE = Pattern.compile("((?:PREPARE|prepare)\\s+\\w+\\s+(?:FROM|from)\\s+)(.*)", Pattern.DOTALL);
+
+    private final Pattern PATTERN_EXECUTE = Pattern.compile("((?:EXECUTE|execute)\\s+)(.*)", Pattern.DOTALL);
+
     private static class SqlRewriter
             extends SqlValidatorImpl
     {
@@ -140,8 +144,6 @@ public class CustomRewriter
         }
     }
 
-    private final Pattern PATTERN_PREPARE = Pattern.compile("((?:PREPARE|prepare)\\s+\\w+\\s+(?:FROM|from)\\s+)(.*)", Pattern.DOTALL);
-    private final Pattern PATTERN_EXECUTE = Pattern.compile("((?:EXECUTE|execute)\\s+)(.*)", Pattern.DOTALL);
     public String rewrite(String origSql) throws SqlParseException {
         SchemaPlus schema = Frameworks.createRootSchema(true);
         FrameworkConfig config = Frameworks.newConfigBuilder()
@@ -175,8 +177,12 @@ public class CustomRewriter
             sql = origSql;
         }
 
-        // TODO: Fix this naive way
-        SqlNode node = planner.parse(sql.replace("[", "").replace("]", ""));
+        SqlNode node = planner.parse(
+                // TODO: Fix this naive way
+                sql.replace("[", "").replace("]", "")
+                        // TODO: Remove this after https://github.com/apache/calcite/pull/2795 is merged
+                        .replace("DAY(", "DAYS(")
+        );
         RelDataTypeFactory typeFactory = new JavaTypeFactoryImpl(config.getTypeSystem());
         SqlRewriter rewriter = new SqlRewriter(config.getOperatorTable(),
                 new CalciteCatalogReader(
