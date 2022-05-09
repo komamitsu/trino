@@ -181,7 +181,7 @@ public class CustomRewriter
                 // TODO: Fix this naive way
                 sql.replace("[", "").replace("]", "")
                         // TODO: Remove this after https://github.com/apache/calcite/pull/2795 is merged
-                        .replace("DAY(", "DAYS(")
+                        .replace("DAY(", "DAY_OF_YEAR(")
         );
         RelDataTypeFactory typeFactory = new JavaTypeFactoryImpl(config.getTypeSystem());
         SqlRewriter rewriter = new SqlRewriter(config.getOperatorTable(),
