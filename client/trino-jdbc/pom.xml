@@ -80,6 +80,12 @@
             <version>1.30.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-babel</artifactId>
+            <version>1.30.0</version>
+        </dependency>
+
         <!-- for testing -->
         <dependency>
             <groupId>io.trino</groupId>
