@@ -83,9 +83,29 @@ public class CustomRewriter
                 }
             }
             else {
+                SqlNodeList args = (SqlNodeList) visit(SqlNodeList.of(node, new SqlDataTypeSpec(new SqlUserDefinedTypeNameSpec("TIMESTAMP", pos), pos)));
+                SqlNode targetValue = visit((SqlCall) args.get(0));
+                SqlNode type = args.get(1);
+                /*
+
+                SqlBasicCall func = (SqlBasicCall) node;
+                SqlOperator operator = func.getOperator();
+                if (operator.getName().equals("+")
+                        || operator.getName().equals("-")
+                        || operator.getName().equals("*")
+                        || operator.getName().equals("/")
+                        || operator.getName().equalsIgnoreCase("DATE_DIFF")) {
+                    targetValue = new SqlBasicCall(
+                            new SqlUnresolvedFunction(
+                                    new SqlIdentifier("FROM_UNIXTIME", pos),
+                                    null, null, null, null, SqlFunctionCategory.TIMEDATE),
+                            SqlNodeList.of(targetValue), pos);
+                }
+                 */
+
                 newNode = new SqlBasicCall(
                         new SqlCastFunction(),
-                        (SqlNodeList) visit(SqlNodeList.of(node, new SqlDataTypeSpec(new SqlUserDefinedTypeNameSpec("TIMESTAMP", pos), pos))),
+                        SqlNodeList.of(targetValue, type),
                         pos);
             }
             return newNode;
@@ -141,7 +161,7 @@ public class CustomRewriter
                     String funcName = call.getOperator().getName();
                     if (funcName.equalsIgnoreCase("DATEADD")) {
                         SqlLiteral timeunit = parseTimeunit(call.operand(0), pos);
-                        SqlNode diff = parseTimeStampValue(call.operand(1), pos);
+                        SqlNode diff = visit((SqlCall) call.operand(1));
                         SqlNode target = parseTimeStampValue(call.operand(2), pos);
                         return new SqlBasicCall(
                                 new SqlUnresolvedFunction(
@@ -226,8 +246,8 @@ public class CustomRewriter
                     transform.withDialect(PrestoSqlDialect.DEFAULT)
                             .withAlwaysUseParentheses(false)
                             .withSubQueryStyle(SqlWriter.SubQueryStyle.HYDE)
-                            .withClauseStartsLine(false)
-                            .withClauseEndsLine(false)
+                            .withClauseStartsLine(true)
+                            .withClauseEndsLine(true)
         ).toString();
 
         if (escapedPrefixSql == null) {
