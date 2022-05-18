@@ -257,6 +257,12 @@ public class CustomRewriter
                         // .replace("DAY(", "DAY_OF_YEAR(")
 
                         // TODO: Fix this naive way
+                        .replace("(YY,", "(year,")
+                        .replace("(yy,", "(year,")
+                        .replace("(MM,", "(month,")
+                        .replace("(mm,", "(month,")
+                        .replace("(DD,", "(day,")
+                        .replace("(dd,", "(day,")
                         .replace("(S,", "(second,")
                         .replace("(s,", "(second,")
         );
