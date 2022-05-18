@@ -40,6 +40,8 @@ import org.apache.calcite.util.TimestampString;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,6 +69,46 @@ public class CustomRewriter
     private static class SqlVisitor
             extends SqlShuttle
     {
+        private SqlNode cast(SqlNode node, SqlDataTypeSpec type, SqlParserPos pos)
+        {
+            SqlNode value;
+            if (node.getKind() == SqlKind.LITERAL) {
+                value = node;
+            }
+            else {
+                value = visit((SqlCall) node);
+            }
+            return new SqlBasicCall(
+                    new SqlCastFunction(),
+                    SqlNodeList.of(value, type),
+                    pos);
+        }
+
+        private SqlNode castToString(SqlNode node, SqlParserPos pos)
+        {
+            if (node.getKind() == SqlKind.CAST) {
+                SqlBasicCall func = (SqlBasicCall) node;
+                SqlDataTypeSpec type = func.operand(1);
+                if (type.getTypeName().getSimple().equalsIgnoreCase("TIME")) {
+                    return new SqlBasicCall(
+                            new SqlUnresolvedFunction(
+                                    new SqlIdentifier("DATE_FORMAT", pos),
+                                    null, null, null, null, SqlFunctionCategory.STRING
+                            ),
+                            SqlNodeList.of(
+                                    castToTimestamp(node, pos),
+                                    SqlLiteral.createCharString("%H:%i:%s", pos)), pos);
+
+                }
+            }
+            return cast(node, new SqlDataTypeSpec(new SqlUserDefinedTypeNameSpec("VARCHAR", pos), pos), pos);
+        }
+
+        private SqlNode castToTimestamp(SqlNode node, SqlParserPos pos)
+        {
+            return cast(node, new SqlDataTypeSpec(new SqlUserDefinedTypeNameSpec("TIMESTAMP", pos), pos), pos);
+        }
+
         private SqlNode parseTimeStampValue(SqlNode node, SqlParserPos pos)
         {
             SqlNode newNode;
@@ -83,30 +125,7 @@ public class CustomRewriter
                 }
             }
             else {
-                SqlNodeList args = (SqlNodeList) visit(SqlNodeList.of(node, new SqlDataTypeSpec(new SqlUserDefinedTypeNameSpec("TIMESTAMP", pos), pos)));
-                SqlNode targetValue = visit((SqlCall) args.get(0));
-                SqlNode type = args.get(1);
-                /*
-
-                SqlBasicCall func = (SqlBasicCall) node;
-                SqlOperator operator = func.getOperator();
-                if (operator.getName().equals("+")
-                        || operator.getName().equals("-")
-                        || operator.getName().equals("*")
-                        || operator.getName().equals("/")
-                        || operator.getName().equalsIgnoreCase("DATE_DIFF")) {
-                    targetValue = new SqlBasicCall(
-                            new SqlUnresolvedFunction(
-                                    new SqlIdentifier("FROM_UNIXTIME", pos),
-                                    null, null, null, null, SqlFunctionCategory.TIMEDATE),
-                            SqlNodeList.of(targetValue), pos);
-                }
-                 */
-
-                newNode = new SqlBasicCall(
-                        new SqlCastFunction(),
-                        SqlNodeList.of(targetValue, type),
-                        pos);
+                return castToTimestamp(node, pos);
             }
             return newNode;
         }
@@ -180,6 +199,18 @@ public class CustomRewriter
                                         null, null, null, null, SqlFunctionCategory.TIMEDATE
                                 ),
                                 SqlNodeList.of(timeunit, v1, v2), pos);
+                    }
+                    else if (funcName.equalsIgnoreCase("CONCAT")) {
+                        List<SqlNode> args = new ArrayList<>();
+                        for (SqlNode arg : call.getOperandList()) {
+                            args.add(castToString(arg, pos));
+                        }
+                        return new SqlBasicCall(
+                                new SqlUnresolvedFunction(
+                                        new SqlIdentifier(funcName, pos),
+                                        null, null, null, null, SqlFunctionCategory.STRING
+                                ),
+                                SqlNodeList.of(pos, args), pos);
                     }
                     break;
                 }
