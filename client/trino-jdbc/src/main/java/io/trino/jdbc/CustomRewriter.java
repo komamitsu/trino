@@ -111,23 +111,27 @@ public class CustomRewriter
 
         private SqlNode parseTimeStampValue(SqlNode node, SqlParserPos pos)
         {
-            SqlNode newNode;
-            if (node.getKind() == SqlKind.LITERAL) {
-                String s = node.toString();
-                try {
-                    newNode = SqlTimestampLiteral.createTimestamp(
-                            TimestampString.fromMillisSinceEpoch(
-                                    // TODO: Optimize
-                                    SqlParserUtil.parseInteger(s).multiply(new BigDecimal("1000")).longValue()), 0, pos);
+            switch (node.getKind()) {
+                case LITERAL: {
+                    SqlNode newNode;
+                    String s = node.toString();
+                    try {
+                        newNode = SqlTimestampLiteral.createTimestamp(
+                                TimestampString.fromMillisSinceEpoch(
+                                        // TODO: Optimize
+                                        SqlParserUtil.parseInteger(s).multiply(new BigDecimal("1000")).longValue()), 0, pos);
+                    }
+                    catch (NumberFormatException e) {
+                        newNode = visit(SqlParserUtil.parseTimestampLiteral(node.toString(), pos));
+                    }
+                    return newNode;
                 }
-                catch (NumberFormatException e) {
-                    newNode = visit(SqlParserUtil.parseTimestampLiteral(node.toString(), pos));
+                case IDENTIFIER: {
+                    return node;
                 }
+                default:
+                    return castToTimestamp(node, pos);
             }
-            else {
-                return castToTimestamp(node, pos);
-            }
-            return newNode;
         }
 
         private SqlLiteral parseTimeunit(SqlNode node, SqlParserPos pos)
@@ -200,6 +204,19 @@ public class CustomRewriter
                                 ),
                                 SqlNodeList.of(timeunit, v1, v2), pos);
                     }
+                    else if (funcName.equalsIgnoreCase("DATEPART")) {
+                        String timeunit = call.operand(0).toString();
+                        SqlNode v = parseTimeStampValue(call.operand(1), pos);
+                        // TODO?: Current impl relies on pre-conversion in rewrite()
+                        // https://trino.io/docs/current/functions/datetime.html#extraction-function
+                        String newFuncName = timeunit;
+                        return new SqlBasicCall(
+                                new SqlUnresolvedFunction(
+                                        new SqlIdentifier(newFuncName, pos),
+                                        null, null, null, null, SqlFunctionCategory.NUMERIC
+                                ),
+                                SqlNodeList.of(v), pos);
+                    }
                     else if (funcName.equalsIgnoreCase("CONCAT")) {
                         List<SqlNode> args = new ArrayList<>();
                         for (SqlNode arg : call.getOperandList()) {
@@ -261,6 +278,7 @@ public class CustomRewriter
                         .replace("(yy,", "(year,")
                         .replace("(MM,", "(month,")
                         .replace("(mm,", "(month,")
+                        .replace("(\"q\",", "(quarter,")
                         .replace("(DD,", "(day,")
                         .replace("(dd,", "(day,")
                         .replace("(S,", "(second,")
