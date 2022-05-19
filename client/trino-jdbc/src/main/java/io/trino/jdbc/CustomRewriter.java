@@ -42,16 +42,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class CustomRewriter
 {
-    private final Pattern PATTERN_PREPARE = Pattern.compile("((?:PREPARE|prepare)\\s+\\w+\\s+(?:FROM|from)\\s+)(.*)", Pattern.DOTALL);
-
-    private final Pattern PATTERN_EXECUTE = Pattern.compile("((?:EXECUTE|execute)\\s+)(.*)", Pattern.DOTALL);
-
     private static class SqlRewriter
             extends SqlValidatorImpl
     {
@@ -236,7 +230,7 @@ public class CustomRewriter
         }
     }
 
-    public String rewrite(String origSql) throws SqlParseException {
+    public String rewrite(String sql) throws SqlParseException {
         SchemaPlus schema = Frameworks.createRootSchema(true);
         FrameworkConfig config = Frameworks.newConfigBuilder()
                 .defaultSchema(schema)
@@ -248,32 +242,9 @@ public class CustomRewriter
                 ).build();
         Planner planner = Frameworks.getPlanner(config);
 
-        if (PATTERN_EXECUTE.matcher(origSql).find()) {
-            return origSql;
-        }
-        // FIXME
-        if (!origSql.contains("[") && !origSql.contains("]")) {
-            return origSql;
-        }
-
-        String escapedPrefixSql = null;
-        Matcher matcher = PATTERN_PREPARE.matcher(origSql);
-        String sql;
-        if (matcher.find()) {
-            escapedPrefixSql = matcher.group(1);
-            sql = matcher.group(2);
-        }
-        else {
-            sql = origSql;
-        }
-
         SqlNode node = planner.parse(
                 // TODO: Fix this naive way
                 sql.replace("[", "").replace("]", "")
-                        // TODO: Remove this after https://github.com/apache/calcite/pull/2795 is merged
-                        // .replace("DAY(", "DAY_OF_YEAR(")
-
-                        // TODO: Fix this naive way
                         .replace("(YY,", "(year,")
                         .replace("(yy,", "(year,")
                         .replace("(MM,", "(month,")
@@ -305,11 +276,6 @@ public class CustomRewriter
                             .withClauseEndsLine(true)
         ).toString();
 
-        if (escapedPrefixSql == null) {
-            return rewrittenSqlStr;
-        }
-        else {
-            return escapedPrefixSql + rewrittenSqlStr;
-        }
+        return rewrittenSqlStr;
     }
 }
