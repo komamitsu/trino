@@ -109,6 +109,7 @@ public class CustomRewriter
             return cast(node, new SqlDataTypeSpec(new SqlUserDefinedTypeNameSpec("TIMESTAMP", pos), pos), pos);
         }
 
+        private static final BigDecimal BIG_DECIMAL_THOUSAND = new BigDecimal("1000");
         private SqlNode parseTimeStampValue(SqlNode node, SqlParserPos pos)
         {
             switch (node.getKind()) {
@@ -118,8 +119,7 @@ public class CustomRewriter
                     try {
                         newNode = SqlTimestampLiteral.createTimestamp(
                                 TimestampString.fromMillisSinceEpoch(
-                                        // TODO: Optimize
-                                        SqlParserUtil.parseInteger(s).multiply(new BigDecimal("1000")).longValue()), 0, pos);
+                                        SqlParserUtil.parseInteger(s).multiply(BIG_DECIMAL_THOUSAND).longValue()), 0, pos);
                     }
                     catch (NumberFormatException e) {
                         newNode = visit(SqlParserUtil.parseTimestampLiteral(node.toString(), pos));
