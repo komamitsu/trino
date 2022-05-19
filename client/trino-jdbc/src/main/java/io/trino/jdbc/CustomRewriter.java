@@ -22,6 +22,7 @@ import org.apache.calcite.sql.SqlTypeNameSpec;
 import org.apache.calcite.sql.SqlUnresolvedFunction;
 import org.apache.calcite.sql.SqlUserDefinedTypeNameSpec;
 import org.apache.calcite.sql.SqlWriter;
+import org.apache.calcite.sql.advise.SqlSimpleParser;
 import org.apache.calcite.sql.dialect.PrestoSqlDialect;
 import org.apache.calcite.sql.fun.SqlCastFunction;
 import org.apache.calcite.sql.parser.SqlParseException;
@@ -42,6 +43,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class CustomRewriter
@@ -230,6 +233,59 @@ public class CustomRewriter
         }
     }
 
+    private static final Pattern REGEXP_ID = Pattern.compile("ID\\((.*)\\)");
+    private String convertBeforeRewrite(String sql)
+    {
+        SqlSimpleParser.Tokenizer tokenizer = new SqlSimpleParser.Tokenizer(sql, "");
+        StringBuilder sb = new StringBuilder();
+        SqlSimpleParser.Token lastToken = null;
+        while (true) {
+            SqlSimpleParser.Token token = tokenizer.nextToken();
+            if (token == null) {
+                break;
+            }
+            Matcher matcher = REGEXP_ID.matcher(token.toString());
+            sb.append(" ");
+            if (matcher.find()) {
+                String id = matcher.group(1);
+                if (lastToken != null && (
+                        lastToken.toString().equalsIgnoreCase("LPAREN")
+                                || lastToken.toString().equalsIgnoreCase("COMMA")
+                )) {
+                    String tmpId = id.replace("\"", "");
+                    if (tmpId.equalsIgnoreCase("yy")) {
+                        sb.append("year");
+                        continue;
+                    }
+                    else if (tmpId.equalsIgnoreCase("mm")) {
+                        sb.append("month");
+                        continue;
+                    }
+                    else if (tmpId.equalsIgnoreCase("q")) {
+                        sb.append("quarter");
+                        continue;
+                    }
+                    else if (tmpId.equalsIgnoreCase("dd")) {
+                        sb.append("day");
+                        continue;
+                    }
+                    else if (tmpId.equalsIgnoreCase("s")) {
+                        sb.append("second");
+                        continue;
+                    }
+                }
+                sb.append(id.replace("[", "\"").replace("]", "\""));
+            }
+            else {
+                token.unparse(sb);
+            }
+            sb.append(" ");
+
+            lastToken = token;
+        }
+        return sb.toString();
+    }
+
     public String rewrite(String sql) throws SqlParseException {
         SchemaPlus schema = Frameworks.createRootSchema(true);
         FrameworkConfig config = Frameworks.newConfigBuilder()
@@ -242,19 +298,7 @@ public class CustomRewriter
                 ).build();
         Planner planner = Frameworks.getPlanner(config);
 
-        SqlNode node = planner.parse(
-                // TODO: Fix this naive way
-                sql.replace("[", "").replace("]", "")
-                        .replace("(YY,", "(year,")
-                        .replace("(yy,", "(year,")
-                        .replace("(MM,", "(month,")
-                        .replace("(mm,", "(month,")
-                        .replace("(\"q\",", "(quarter,")
-                        .replace("(DD,", "(day,")
-                        .replace("(dd,", "(day,")
-                        .replace("(S,", "(second,")
-                        .replace("(s,", "(second,")
-        );
+        SqlNode node = planner.parse(convertBeforeRewrite(sql));
         RelDataTypeFactory typeFactory = new JavaTypeFactoryImpl(config.getTypeSystem());
         SqlRewriter rewriter = new SqlRewriter(config.getOperatorTable(),
                 new CalciteCatalogReader(
