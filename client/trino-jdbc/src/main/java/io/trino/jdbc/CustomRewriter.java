@@ -255,26 +255,26 @@ public class CustomRewriter
                     String tmpId = id.replace("\"", "");
                     if (tmpId.equalsIgnoreCase("yy")) {
                         sb.append("year");
-                        continue;
                     }
                     else if (tmpId.equalsIgnoreCase("mm")) {
                         sb.append("month");
-                        continue;
                     }
                     else if (tmpId.equalsIgnoreCase("q")) {
                         sb.append("quarter");
-                        continue;
                     }
                     else if (tmpId.equalsIgnoreCase("dd")) {
                         sb.append("day");
-                        continue;
                     }
                     else if (tmpId.equalsIgnoreCase("s")) {
                         sb.append("second");
-                        continue;
+                    }
+                    else {
+                        sb.append(id.replace("[", "\"").replace("]", "\""));
                     }
                 }
-                sb.append(id.replace("[", "\"").replace("]", "\""));
+                else {
+                    sb.append(id.replace("[", "\"").replace("]", "\""));
+                }
             }
             else {
                 token.unparse(sb);
@@ -286,7 +286,24 @@ public class CustomRewriter
         return sb.toString();
     }
 
-    public String rewrite(String sql) throws SqlParseException {
+    private final Pattern PATTERN_PREPARE = Pattern.compile("((?:PREPARE|prepare)\\s+\\w+\\s+(?:FROM|from)\\s+)(.*)", Pattern.DOTALL);
+    private final Pattern PATTERN_EXECUTE = Pattern.compile("((?:EXECUTE|execute)\\s+)(.*)", Pattern.DOTALL);
+
+    public String rewrite(String origSql) throws SqlParseException {
+        if (PATTERN_EXECUTE.matcher(origSql).find()) {
+            return origSql;
+        }
+        String escapedPrefixSql = null;
+        Matcher matcher = PATTERN_PREPARE.matcher(origSql);
+        String sql;
+        if (matcher.find()) {
+            escapedPrefixSql = matcher.group(1);
+            sql = matcher.group(2);
+        }
+        else {
+            sql = origSql;
+        }
+
         SchemaPlus schema = Frameworks.createRootSchema(true);
         FrameworkConfig config = Frameworks.newConfigBuilder()
                 .defaultSchema(schema)
@@ -320,6 +337,11 @@ public class CustomRewriter
                             .withClauseEndsLine(true)
         ).toString();
 
-        return rewrittenSqlStr;
+        if (escapedPrefixSql == null) {
+            return rewrittenSqlStr;
+        }
+        else {
+            return escapedPrefixSql + rewrittenSqlStr;
+        }
     }
 }
