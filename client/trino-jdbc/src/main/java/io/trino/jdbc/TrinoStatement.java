@@ -270,7 +270,7 @@ public class TrinoStatement
         try {
             // FIXME: The ugly replacements
             rewrittenSql = new CustomRewriter().rewrite(sql);
-        } catch (SqlParseException e) {
+        } catch (Throwable e) {
             String msg = String.format("SQL: %s, MESSAGE: %s", sql, e.getMessage());
             logger.logMethodCall("Statement", "EXCEPTION", msg);
             throw new RuntimeException(msg, e);
