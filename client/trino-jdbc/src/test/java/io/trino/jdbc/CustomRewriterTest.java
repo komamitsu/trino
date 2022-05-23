@@ -301,4 +301,14 @@ public class CustomRewriterTest
         );
         rewriteAndAssertSQL(SQL_HOUR_AGGREGATION, expected);
     }
+
+    @Test
+    public void rewriteInvalidQuarterAggregationSQL()
+            throws Throwable
+    {
+        List<String> expected = Arrays.asList(
+                "2014-10-01 00:00:00.000"
+        );
+        rewriteAndAssertSQL(SQL_QUARTER_AGGREGATION, expected);
+    }
 }
