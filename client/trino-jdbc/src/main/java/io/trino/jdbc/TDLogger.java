@@ -10,26 +10,32 @@ import static com.treasure_data.logger.Constants.TD_LOGGER_AGENTMODE;
 
 public class TDLogger
 {
-    static TDLogger logger;
+    static TDLogger logger = new NullLogger();
+
     static synchronized void initLogger(String tdApiKey)
     {
-        if (logger == null) {
+        if (logger == null || logger instanceof NullLogger) {
             logger = new TDLogger(tdApiKey);
         }
     }
 
     private final TreasureDataLogger tdLogger;
 
-    public TDLogger(String tdApiKey)
+    TDLogger(String tdApiKey)
     {
-        Properties properties = new Properties();
-        properties.put("td.logger.api.key", tdApiKey);
-        properties.put("td.logger.api.server.host", "api-development-import.treasuredata.com");
-        properties.put("td.logger.api.server.port", "443");
-        properties.put("td.logger.api.server.schema", "https");
-        properties.put("td.logger.create.table.auto", "true");
-        properties.put(TD_LOGGER_AGENTMODE, "false");
-        tdLogger = TreasureDataLogger.getLogger("mitsudb", properties);
+        if (tdApiKey != null) {
+            Properties properties = new Properties();
+            properties.put("td.logger.api.key", tdApiKey);
+            properties.put("td.logger.api.server.host", "api-development-import.treasuredata.com");
+            properties.put("td.logger.api.server.port", "443");
+            properties.put("td.logger.api.server.schema", "https");
+            properties.put("td.logger.create.table.auto", "true");
+            properties.put(TD_LOGGER_AGENTMODE, "false");
+            tdLogger = TreasureDataLogger.getLogger("mitsudb", properties);
+        }
+        else {
+            tdLogger = null;
+        }
     }
 
     public void logMethodCall(String clazz, String method)
@@ -52,4 +58,29 @@ public class TDLogger
     {
         tdLogger.close();
     }
+
+    static class NullLogger
+        extends TDLogger
+    {
+        public NullLogger()
+        {
+            super(null);
+        }
+
+        @Override
+        public void logMethodCall(String clazz, String method)
+        {
+        }
+
+        @Override
+        public void logMethodCall(String clazz, String method, String value)
+        {
+        }
+
+        @Override
+        public void close()
+        {
+        }
+    }
 }
+

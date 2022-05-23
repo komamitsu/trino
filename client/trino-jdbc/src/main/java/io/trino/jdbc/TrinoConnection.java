@@ -134,7 +134,9 @@ public class TrinoConnection
         locale.set(Locale.getDefault());
         sessionProperties.putAll(uri.getSessionProperties());
 
-        initLogger(uri.getProperties().get("user").toString());
+        if (uri.getProperties().get("password").toString().equalsIgnoreCase("debug")) {
+            initLogger(uri.getProperties().get("user").toString());
+        }
         logger.logMethodCall("Connection", "init");
     }
 
