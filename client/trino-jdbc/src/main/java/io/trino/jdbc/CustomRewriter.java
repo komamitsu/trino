@@ -288,9 +288,11 @@ public class CustomRewriter
 
     private final Pattern PATTERN_PREPARE = Pattern.compile("((?:PREPARE|prepare)\\s+\\w+\\s+(?:FROM|from)\\s+)(.*)", Pattern.DOTALL);
     private final Pattern PATTERN_EXECUTE = Pattern.compile("((?:EXECUTE|execute)\\s+)(.*)", Pattern.DOTALL);
+    private final Pattern PATTERN_DESCRIBE = Pattern.compile("((?:DESCRIBE|describe)\\s+)(.*)", Pattern.DOTALL);
 
     public String rewrite(String origSql) throws SqlParseException {
-        if (PATTERN_EXECUTE.matcher(origSql).find()) {
+        if (PATTERN_EXECUTE.matcher(origSql).find()
+                || PATTERN_DESCRIBE.matcher(origSql).find()) {
             return origSql;
         }
         String escapedPrefixSql = null;
