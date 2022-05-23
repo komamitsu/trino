@@ -44,6 +44,86 @@ public class CustomRewriterTest
                     "WHERE (rn > 0 AND rn <= 50001 )\n" +
                     "ORDER BY [TempTableQuerySchema].[YsnsAls_0002] ASC";
 
+    private static final String SQL_QUARTER_AGGREGATION =
+            "WITH tq_gH9v2OuNw_cTable AS (\n" +
+                    "  SELECT *, from_unixtime(\"time\") as t FROM \"sample_datasets\".\"www_access\"\n" +
+                    ")\n" +
+                    "SELECT [QsnsAls_0007], [snsCol_0003] FROM (\n" +
+                    "  SELECT ROW_NUMBER() OVER (ORDER BY (SELECT [snsTbl__0001].[QsnsAls_0007]) ASC) as rn,\n" +
+                    "  (CAST(DateAdd(yy,YEAR([snsTbl__0001].[QsnsAls_0007]) - 1904, DateAdd(mm,((((3) * (DATEPART(\"q\",[snsTbl__0001].[QsnsAls_0007])))) - 2) - 1, DateAdd(dd, 1 - 1, '1904-01-01'))) AS DateTime)) AS [QsnsAls_0007],\n" +
+                    "  ([snsTbl__0001].[snsCol_0003]) AS [snsCol_0003]\n" +
+                    "  FROM (\n" +
+                    "    SELECT\n" +
+                    "      ([snsTbl__0001].[QsnsAls_0007]) AS [QsnsAls_0007],\n" +
+                    "      ([snsTbl__0001].[snsCol_0002]) AS [snsCol_0003]\n" +
+                    "    FROM (\n" +
+                    "      SELECT\n" +
+                    "        ([snsTbl__0001].[QsnsAls_0007]) AS [QsnsAls_0007],\n" +
+                    "        ([snsTbl__0001].[snsCol_0002]) AS [snsCol_0002]\n" +
+                    "      FROM (\n" +
+                    "        SELECT\n" +
+                    "          ([TempTableQuerySchema].[QsnsAls_0007]) AS [QsnsAls_0007],\n" +
+                    "          (COUNT([TempTableQuerySchema].[snsCol_0002])) AS [snsCol_0002]\n" +
+                    "        FROM (\n" +
+                    "          SELECT\n" +
+                    "            ([TempTableQuerySchema].[QsnsAls_0007]) AS [QsnsAls_0007],\n" +
+                    "            ([TempTableQuerySchema].[snsCol_0002]) AS [snsCol_0002]\n" +
+                    "          FROM (\n" +
+                    "            SELECT\n" +
+                    "              ([tq_gH9v2OuNw].[snsCol_0002]) AS [snsCol_0002],\n" +
+                    "              ([tq_gH9v2OuNw].[QsnsAls_0007]) AS [QsnsAls_0007]\n" +
+                    "            FROM (\n" +
+                    "              SELECT\n" +
+                    "                ([tq_gH9v2OuNw].[code]) AS [snsCol_0002],\n" +
+                    "                (CAST(DateAdd(yy,YEAR([tq_gH9v2OuNw].[t]) - 1904, DateAdd(mm,((((3) * (DATEPART(\"q\",[tq_gH9v2OuNw].[t])))) - 2) - 1, DateAdd(dd, 1 - 1, '1904-01-01'))) AS DateTime)) AS [QsnsAls_0007]\n" +
+                    "              FROM [tq_gH9v2OuNw_cTable] [tq_gH9v2OuNw]\n" +
+                    "            ) AS [tq_gH9v2OuNw]\n" +
+                    "          ) AS [TempTableQuerySchema]\n" +
+                    "        ) AS [TempTableQuerySchema]\n" +
+                    "        GROUP BY [TempTableQuerySchema].[QsnsAls_0007]\n" +
+                    "      ) AS [snsTbl__0001]\n" +
+                    "    ) AS [snsTbl__0001]\n" +
+                    "  ) AS [snsTbl__0001]\n" +
+                    ") AS [snsTbl__0001]\n" +
+                    "WHERE (rn > 0 AND rn <= 50001 )\n" +
+                    "ORDER BY [snsTbl__0001].[QsnsAls_0007] ASC";
+
+    private static final String SQL_MONTH_AGGREGATION =
+            "WITH tq_iB0F0LSo8_cTable AS (\n" +
+                    "  SELECT *, from_unixtime(\"time\") as t FROM \"sample_datasets\".\"www_access\"\n" +
+                    ")\n" +
+                    "SELECT [MsnsAls_0006]\n" +
+                    "FROM (\n" +
+                    "  SELECT\n" +
+                    "    ROW_NUMBER() OVER (ORDER BY (SELECT [TempTableQuerySchema].[MsnsAls_0006]) ASC) as rn,\n" +
+                    "    (CAST(DateAdd(yy,\n" +
+                    "            YEAR([TempTableQuerySchema].[MsnsAls_0006]) - 1904,\n" +
+                    "            DateAdd(mm,MONTH([TempTableQuerySchema].[MsnsAls_0006]) - 1, DateAdd(dd, 1 - 1, '1904-01-01'))) AS DateTime)\n" +
+                    "    ) AS [MsnsAls_0006]\n" +
+                    "  FROM (\n" +
+                    "    SELECT\n" +
+                    "      ([TempTableQuerySchema].[MsnsAls_0006]) AS [MsnsAls_0006]\n" +
+                    "    FROM (\n" +
+                    "      SELECT\n" +
+                    "        ([TempTableQuerySchema].[MsnsAls_0006]) AS [MsnsAls_0006]\n" +
+                    "      FROM (\n" +
+                    "        SELECT\n" +
+                    "          ([TempTableQuerySchema].[MsnsAls_0006]) AS [MsnsAls_0006]\n" +
+                    "        FROM (\n" +
+                    "          SELECT\n" +
+                    "            (CAST(DateAdd(yy,\n" +
+                    "                    YEAR([tq_iB0F0LSo8].[t]) - 1904,\n" +
+                    "                    DateAdd(mm,MONTH([tq_iB0F0LSo8].[t]) - 1, DateAdd(dd, 1 - 1, '1904-01-01'))) AS DateTime)\n" +
+                    "            ) AS [MsnsAls_0006]\n" +
+                    "          FROM [tq_iB0F0LSo8_cTable] [tq_iB0F0LSo8]\n" +
+                    "        ) AS [TempTableQuerySchema]\n" +
+                    "      ) AS [TempTableQuerySchema]\n" +
+                    "    GROUP BY [TempTableQuerySchema].[MsnsAls_0006]\n" +
+                    "  ) AS [TempTableQuerySchema]) AS [TempTableQuerySchema]\n" +
+                    ") AS [TempTableQuerySchema]\n" +
+                    "WHERE (rn > 0 AND rn <= 50001 )\n" +
+                    "ORDER BY [TempTableQuerySchema].[MsnsAls_0006] ASC";
+
     private static final String SQL_DAY_AGGREGATION =
             "WITH tq_gH9v2OuNw_cTable AS (\n" +
                     "  SELECT *, from_unixtime(\"time\") as t FROM \"sample_datasets\".\"www_access\"\n" +
@@ -107,7 +187,6 @@ public class CustomRewriterTest
                     "ORDER BY [snsTbl__0001].[DsnsAls_0014] ASC";
 
     private static final String SQL_HOUR_AGGREGATION =
-            /*
             "WITH tq_gH9v2OuNw_cTable AS (\n" +
                     "  SELECT *, from_unixtime(\"time\") as t FROM \"sample_datasets\".\"www_access\"\n" +
                     ")\n" +
@@ -133,116 +212,7 @@ public class CustomRewriterTest
                     "  GROUP BY [TempTableQuerySchema].[snsCol_0001]\n" +
                     ") AS [TempTableQuerySchema]\n" +
                     ") AS [TempTableQuerySchema]\n" +
-                    ") AS [TempTableQuerySchema\n" +
-                    "WHERE (rn > 0 AND rn <= 50001\n" +
-                    "ORDER BY [TempTableQuerySchema].[snsCol_0001] ASC";
-             */
-            "WITH tq_gH9v2OuNw_cTable AS (\n" +
-            "  SELECT *, from_unixtime(\"time\") as t FROM \"sample_datasets\".\"www_access\"\n" +
-            ")\n" +
-            "SELECT [snsCol_0001] FROM (\n" +
-            "  SELECT ROW_NUMBER() OVER (ORDER BY (SELECT [TempTableQuerySchema].[snsCol_0001]) ASC) as rn,\n" +
-            "  (CONCAT('1111-11-11T',CAST([TempTableQuerySchema].[snsCol_0001] AS TIME))) AS [snsCol_0001] FROM (\n" +
-            "    SELECT ([TempTableQuerySchema].[snsCol_0001]) AS [snsCol_0001]\n" +
-            "    FROM (SELECT ([TempTableQuerySchema].[snsCol_0001]) AS [snsCol_0001] FROM (\n" +
-            "    SELECT (\n" +
-            "      dateadd(s,\n" +
-            "        (DATEDIFF(SECOND, 0,cast ([TempTableQuerySchema].[snsCol_0001] as  time))\n" +
-            "        - DATEDIFF(SECOND, 0,cast ([TempTableQuerySchema].[snsCol_0001] as  time))\n" +
-            "        % (CAST('3600000' AS INT)/1000)), 0 )) AS [snsCol_0001]\n" +
-            "    FROM (\n" +
-            "      SELECT (\n" +
-            "        dateadd(s,\n" +
-            "          (DATEDIFF(SECOND, 0,cast ([tq_gH9v2OuNw].[t] as  time))\n" +
-            "          - DATEDIFF(SECOND, 0,cast ([tq_gH9v2OuNw].[t] as  time))\n" +
-            "          % (CAST('3600000' AS INT)/1000)), 0 )) AS [snsCol_0001]\n" +
-            "      FROM [tq_gH9v2OuNw_cTable] [tq_gH9v2OuNw]\n" +
-            "    ) AS [TempTableQuerySchema]\n" +
-            "  ) AS [TempTableQuerySchema]\n" +
-            "  GROUP BY [TempTableQuerySchema].[snsCol_0001]\n" +
-            ") AS [TempTableQuerySchema]\n" +
-            ") AS [TempTableQuerySchema]\n" +
-            ") AS [TempTableQuerySchema] WHERE (rn > 0 AND rn <= 50001 ) ORDER BY [TempTableQuerySchema].[snsCol_0001] ASC";
-
-    private static final String SQL_MONTH_AGGREGATION =
-            "WITH tq_iB0F0LSo8_cTable AS (\n" +
-                    "  SELECT *, from_unixtime(\"time\") as t FROM \"sample_datasets\".\"www_access\"\n" +
-                    ")\n" +
-                    "SELECT [MsnsAls_0006]\n" +
-                    "FROM (\n" +
-                    "  SELECT\n" +
-                    "    ROW_NUMBER() OVER (ORDER BY (SELECT [TempTableQuerySchema].[MsnsAls_0006]) ASC) as rn,\n" +
-                    "    (CAST(DateAdd(yy,\n" +
-                    "            YEAR([TempTableQuerySchema].[MsnsAls_0006]) - 1904,\n" +
-                    "            DateAdd(mm,MONTH([TempTableQuerySchema].[MsnsAls_0006]) - 1, DateAdd(dd, 1 - 1, '1904-01-01'))) AS DateTime)\n" +
-                    "    ) AS [MsnsAls_0006]\n" +
-                    "  FROM (\n" +
-                    "    SELECT\n" +
-                    "      ([TempTableQuerySchema].[MsnsAls_0006]) AS [MsnsAls_0006]\n" +
-                    "    FROM (\n" +
-                    "      SELECT\n" +
-                    "        ([TempTableQuerySchema].[MsnsAls_0006]) AS [MsnsAls_0006]\n" +
-                    "      FROM (\n" +
-                    "        SELECT\n" +
-                    "          ([TempTableQuerySchema].[MsnsAls_0006]) AS [MsnsAls_0006]\n" +
-                    "        FROM (\n" +
-                    "          SELECT\n" +
-                    "            (CAST(DateAdd(yy,\n" +
-                    "                    YEAR([tq_iB0F0LSo8].[t]) - 1904,\n" +
-                    "                    DateAdd(mm,MONTH([tq_iB0F0LSo8].[t]) - 1, DateAdd(dd, 1 - 1, '1904-01-01'))) AS DateTime)\n" +
-                    "            ) AS [MsnsAls_0006]\n" +
-                    "          FROM [tq_iB0F0LSo8_cTable] [tq_iB0F0LSo8]\n" +
-                    "        ) AS [TempTableQuerySchema]\n" +
-                    "      ) AS [TempTableQuerySchema]\n" +
-                    "    GROUP BY [TempTableQuerySchema].[MsnsAls_0006]\n" +
-                    "  ) AS [TempTableQuerySchema]) AS [TempTableQuerySchema]\n" +
-                    ") AS [TempTableQuerySchema]\n" +
-                    "WHERE (rn > 0 AND rn <= 50001 )\n" +
-                    "ORDER BY [TempTableQuerySchema].[MsnsAls_0006] ASC";
-
-    private static final String SQL_QUARTER_AGGREGATION =
-            "WITH tq_gH9v2OuNw_cTable AS (\n" +
-                    "  SELECT *, from_unixtime(\"time\") as t FROM \"sample_datasets\".\"www_access\"\n" +
-                    ")\n" +
-                    "SELECT [QsnsAls_0007], [snsCol_0003] FROM (\n" +
-                    "  SELECT ROW_NUMBER() OVER (ORDER BY (SELECT [snsTbl__0001].[QsnsAls_0007]) ASC) as rn,\n" +
-                    "  (CAST(DateAdd(yy,YEAR([snsTbl__0001].[QsnsAls_0007]) - 1904, DateAdd(mm,((((3) * (DATEPART(\"q\",[snsTbl__0001].[QsnsAls_0007])))) - 2) - 1, DateAdd(dd, 1 - 1, '1904-01-01'))) AS DateTime)) AS [QsnsAls_0007],\n" +
-                    "  ([snsTbl__0001].[snsCol_0003]) AS [snsCol_0003]\n" +
-                    "  FROM (\n" +
-                    "    SELECT\n" +
-                    "      ([snsTbl__0001].[QsnsAls_0007]) AS [QsnsAls_0007],\n" +
-                    "      ([snsTbl__0001].[snsCol_0002]) AS [snsCol_0003]\n" +
-                    "    FROM (\n" +
-                    "      SELECT\n" +
-                    "        ([snsTbl__0001].[QsnsAls_0007]) AS [QsnsAls_0007],\n" +
-                    "        ([snsTbl__0001].[snsCol_0002]) AS [snsCol_0002]\n" +
-                    "      FROM (\n" +
-                    "        SELECT\n" +
-                    "          ([TempTableQuerySchema].[QsnsAls_0007]) AS [QsnsAls_0007],\n" +
-                    "          (COUNT([TempTableQuerySchema].[snsCol_0002])) AS [snsCol_0002]\n" +
-                    "        FROM (\n" +
-                    "          SELECT\n" +
-                    "            ([TempTableQuerySchema].[QsnsAls_0007]) AS [QsnsAls_0007],\n" +
-                    "            ([TempTableQuerySchema].[snsCol_0002]) AS [snsCol_0002]\n" +
-                    "          FROM (\n" +
-                    "            SELECT\n" +
-                    "              ([tq_gH9v2OuNw].[snsCol_0002]) AS [snsCol_0002],\n" +
-                    "              ([tq_gH9v2OuNw].[QsnsAls_0007]) AS [QsnsAls_0007]\n" +
-                    "            FROM (\n" +
-                    "              SELECT\n" +
-                    "                ([tq_gH9v2OuNw].[code]) AS [snsCol_0002],\n" +
-                    "                (CAST(DateAdd(yy,YEAR([tq_gH9v2OuNw].[t]) - 1904, DateAdd(mm,((((3) * (DATEPART(\"q\",[tq_gH9v2OuNw].[t])))) - 2) - 1, DateAdd(dd, 1 - 1, '1904-01-01'))) AS DateTime)) AS [QsnsAls_0007]\n" +
-                    "              FROM [tq_gH9v2OuNw_cTable] [tq_gH9v2OuNw]\n" +
-                    "            ) AS [tq_gH9v2OuNw]\n" +
-                    "          ) AS [TempTableQuerySchema]\n" +
-                    "        ) AS [TempTableQuerySchema]\n" +
-                    "        GROUP BY [TempTableQuerySchema].[QsnsAls_0007]\n" +
-                    "      ) AS [snsTbl__0001]\n" +
-                    "    ) AS [snsTbl__0001]\n" +
-                    "  ) AS [snsTbl__0001]\n" +
-                    ") AS [snsTbl__0001]\n" +
-                    "WHERE (rn > 0 AND rn <= 50001 )\n" +
-                    "ORDER BY [snsTbl__0001].[QsnsAls_0007] ASC";
+                    ") AS [TempTableQuerySchema] WHERE (rn > 0 AND rn <= 50001 ) ORDER BY [TempTableQuerySchema].[snsCol_0001] ASC";
 
     @AfterClass
     public static void tearDown()
@@ -297,6 +267,26 @@ public class CustomRewriterTest
     }
 
     @Test
+    public void rewriteInvalidQuarterAggregationSQL()
+            throws Throwable
+    {
+        List<String> expected = Arrays.asList(
+                "2014-10-01 00:00:00.000"
+        );
+        rewriteAndAssertSQL(SQL_QUARTER_AGGREGATION, expected);
+    }
+
+    @Test
+    public void rewriteInvalidMonthAggregationSQL()
+            throws Throwable
+    {
+        List<String> expected = Arrays.asList(
+                "2014-10-01 00:00:00.000"
+        );
+        rewriteAndAssertSQL(SQL_MONTH_AGGREGATION, expected);
+    }
+
+    @Test
     public void rewriteInvalidDayAggregationSQL()
             throws Throwable
     {
@@ -336,25 +326,5 @@ public class CustomRewriterTest
                 "1111-11-11T23:00:00"
         );
         rewriteAndAssertSQL(SQL_HOUR_AGGREGATION, expected);
-    }
-
-    @Test
-    public void rewriteInvalidMonthAggregationSQL()
-            throws Throwable
-    {
-        List<String> expected = Arrays.asList(
-                "2014-10-01 00:00:00.000"
-        );
-        rewriteAndAssertSQL(SQL_MONTH_AGGREGATION, expected);
-    }
-
-    @Test
-    public void rewriteInvalidQuarterAggregationSQL()
-            throws Throwable
-    {
-        List<String> expected = Arrays.asList(
-                "2014-10-01 00:00:00.000"
-        );
-        rewriteAndAssertSQL(SQL_QUARTER_AGGREGATION, expected);
     }
 }
