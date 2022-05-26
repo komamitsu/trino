@@ -9,6 +9,7 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlBasicCall;
 import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlDataTypeSpec;
+import org.apache.calcite.sql.SqlDynamicParam;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlIntervalQualifier;
@@ -157,6 +158,49 @@ public class CustomRewriter
                 timeunit = origIdentifier;
             }
             return SqlLiteral.createCharString(timeunit, pos);
+        }
+
+        @Override
+        public @Nullable SqlNode visit(SqlLiteral literal) {
+            // System.out.println("LITERAL: " + literal);
+            try {
+                // Hmm, not so robust way...
+                return SqlParserUtil.parseTimestampLiteral(literal.toString(), literal.getParserPosition());
+            }
+            catch (Throwable e) {
+                // nothing to do
+            }
+            return super.visit(literal);
+        }
+
+        @Override
+        public @Nullable SqlNode visit(SqlIdentifier id) {
+            // System.out.println("ID: " + id);
+            return super.visit(id);
+        }
+
+        @Override
+        public @Nullable SqlNode visit(SqlDataTypeSpec type) {
+            // System.out.println("TYPE: " + type);
+            return super.visit(type);
+        }
+
+        @Override
+        public @Nullable SqlNode visit(SqlDynamicParam param) {
+            // System.out.println("PARAM: " + param);
+            return super.visit(param);
+        }
+
+        @Override
+        public @Nullable SqlNode visit(SqlIntervalQualifier intervalQualifier) {
+            // System.out.println("INTERVAL: " + intervalQualifier);
+            return super.visit(intervalQualifier);
+        }
+
+        @Override
+        public @Nullable SqlNode visit(SqlNodeList nodeList) {
+            // System.out.println("NODE_LIST: " + nodeList);
+            return super.visit(nodeList);
         }
 
         @Override
