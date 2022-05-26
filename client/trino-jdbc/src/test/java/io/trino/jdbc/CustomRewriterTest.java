@@ -214,6 +214,86 @@ public class CustomRewriterTest
                     ") AS [TempTableQuerySchema]\n" +
                     ") AS [TempTableQuerySchema] WHERE (rn > 0 AND rn <= 50001 ) ORDER BY [TempTableQuerySchema].[snsCol_0001] ASC";
 
+    private static final String SQL_CDP =
+            "WITH tq_9P0A6UJV8_cTable AS (select\n" +
+                    "    cdp_customer_id, lead_id, email, contact_id, account_id, industry, tier, function, lastname, firstname, phone, opps_type, opps_dm_status, opps_product_name, opps_stage_int, opps_stage, channel, subscription_status,\n" +
+                    "    contact_status, leadsource, most_recent_source, date(lead_created_dt) as lead_created_dt, date(lead_modified_dt) as lead_modified_dt, leadage, company_code, company_name, tdb_employeenumberrange_ge, tdb_employeenumberrange_lt,\n" +
+                    "    tdb_mainindustrialclassname, tdb_subindustrialclassname, person_department, person_position, person_positionrank, tdb_salesrange_ge, tdb_salesrange_lt, score1\n" +
+                    "from\n" +
+                    "    new_cdp_for_sales_dataset.customers_ti\n" +
+                    "), tq_2eI8AprQJ_cTable AS (select\n" +
+                    "    cdp_customer_id,\n" +
+                    "    from_unixtime(to_unixtime(cast(datetime as timestamp))) as datetime,\n" +
+                    "    category,\n" +
+                    "    activity,\n" +
+                    "    name,\n" +
+                    "    duration\n" +
+                    "from\n" +
+                    "    new_cdp_for_sales_dataset.behavior_ti\n" +
+                    ")" +
+                    "SELECT [DsnsAls_0014], [snsCol_0002], [snsCol_0005] FROM (" +
+                    "  SELECT " +
+                    "    ROW_NUMBER() OVER (ORDER BY (SELECT [snsTbl__0001].[DsnsAls_0014]) ASC,(SELECT [snsTbl__0001].[snsCol_0002]) ASC) as rn," +
+                    "    (CAST(DateAdd(yy,YEAR([snsTbl__0001].[DsnsAls_0014]) - 1904, DateAdd(mm,MONTH([snsTbl__0001].[DsnsAls_0014]) - 1, DateAdd(dd, DAY([snsTbl__0001].[DsnsAls_0014]) - 1, '1904-01-01'))) AS DateTime)) AS [DsnsAls_0014]," +
+                    "    ([snsTbl__0001].[snsCol_0002]) AS [snsCol_0002]," +
+                    "    ([snsTbl__0001].[snsCol_0005]) AS [snsCol_0005]" +
+                    "  FROM (" +
+                    "    SELECT" +
+                    "      ([snsTbl__0001].[DsnsAls_0014]) AS [DsnsAls_0014]," +
+                    "      ([snsTbl__0001].[snsCol_0002]) AS [snsCol_0002]," +
+                    "      ([snsTbl__0001].[snsCol_0003]) AS [snsCol_0005]" +
+                    "    FROM (" +
+                    "      SELECT" +
+                    "        ([snsTbl__0001].[DsnsAls_0014]) AS [DsnsAls_0014]," +
+                    "        ([snsTbl__0001].[snsCol_0002]) AS [snsCol_0002]," +
+                    "        ([snsTbl__0001].[snsCol_0003]) AS [snsCol_0003]" +
+                    "      FROM (" +
+                    "        SELECT" +
+                    "          ([TempTableQuerySchema].[DsnsAls_0014]) AS [DsnsAls_0014]," +
+                    "          ([TempTableQuerySchema].[snsCol_0002]) AS [snsCol_0002]," +
+                    "          (COUNT(DISTINCT([TempTableQuerySchema].[snsCol_0003]))) AS [snsCol_0003]" +
+                    "        FROM (" +
+                    "          SELECT" +
+                    "            ([TempTableQuerySchema].[DsnsAls_0014]) AS [DsnsAls_0014]," +
+                    "            ([TempTableQuerySchema].[snsCol_0002]) AS [snsCol_0002]," +
+                    "            ([TempTableQuerySchema].[snsCol_0003]) AS [snsCol_0003]," +
+                    "            ([TempTableQuerySchema].[snsCol_0004]) AS [snsCol_0004]" +
+                    "          FROM (" +
+                    "            SELECT" +
+                    "              ([tq_9P0A6UJV8].[snsCol_0004]) AS [snsCol_0004]," +
+                    "              ([tq_2eI8AprQJ].[snsCol_0002]) AS [snsCol_0002]," +
+                    "              ([tq_2eI8AprQJ].[DsnsAls_0014]) AS [DsnsAls_0014]," +
+                    "              ([tq_2eI8AprQJ].[snsCol_0003]) AS [snsCol_0003]" +
+                    "            FROM (" +
+                    "              SELECT" +
+                    "                ([tq_9P0A6UJV8].[cdp_customer_id]) AS [cdp_customer_id]," +
+                    "                ([tq_9P0A6UJV8].[company_name]) AS [snsCol_0004]" +
+                    "              FROM [tq_9P0A6UJV8_cTable] [tq_9P0A6UJV8]" +
+                    "              WHERE" +
+                    "                ([tq_9P0A6UJV8].[company_name] LIKE '%トレジャー%')) AS [tq_9P0A6UJV8]" +
+                    "              INNER JOIN (" +
+                    "                SELECT" +
+                    "                  ([tq_2eI8AprQJ].[cdp_customer_id]) AS [cdp_customer_id]," +
+                    "                  ([tq_2eI8AprQJ].[category]) AS [snsCol_0002]," +
+                    "                  (CAST(DateAdd(yy,YEAR([tq_2eI8AprQJ].[datetime]) - 1904, DateAdd(mm,MONTH([tq_2eI8AprQJ].[datetime]) - 1, DateAdd(dd, DAY([tq_2eI8AprQJ].[datetime]) - 1, '1904-01-01'))) AS DateTime)) AS [DsnsAls_0014]," +
+                    "                  ([tq_2eI8AprQJ].[name]) AS [snsCol_0003]" +
+                    "                FROM [tq_2eI8AprQJ_cTable] [tq_2eI8AprQJ]) AS [tq_2eI8AprQJ]" +
+                    "              ON ([tq_9P0A6UJV8].[cdp_customer_id] = [tq_2eI8AprQJ].[cdp_customer_id])" +
+                    "            ) AS [TempTableQuerySchema]" +
+                    "          ) AS [TempTableQuerySchema]" +
+                    "          GROUP BY" +
+                    "            [TempTableQuerySchema].[DsnsAls_0014]," +
+                    "            [TempTableQuerySchema].[snsCol_0002]" +
+                    "        ) AS [snsTbl__0001]" +
+                    "      ) AS [snsTbl__0001]" +
+                    "    ) AS [snsTbl__0001]" +
+                    "  ) AS [snsTbl__0001]" +
+                    "  WHERE (rn > 0 AND rn <= 20000" +
+                    ")" +
+                    "ORDER BY" +
+                    "  [snsTbl__0001].[DsnsAls_0014] ASC," +
+                    "  [snsTbl__0001].[snsCol_0002] ASC";
+
     @AfterClass
     public static void tearDown()
     {
@@ -239,9 +319,12 @@ public class CustomRewriterTest
             ResultSet rs = stmt.getResultSet();
             List<String> actual = new ArrayList<>();
             // Extract data from result set
+            int count = 0;
             while (rs.next()) {
                 actual.add(rs.getString(1));
+                count++;
             }
+            System.out.println("result size: " + count);
 
             assertEquals(
                     expected.stream().sorted().collect(Collectors.toList()),
@@ -326,5 +409,15 @@ public class CustomRewriterTest
                 "1111-11-11T23:00:00"
         );
         rewriteAndAssertSQL(SQL_HOUR_AGGREGATION, expected);
+    }
+
+    @Test
+    public void rewriteInvalidSQLForCDP()
+            throws Throwable
+    {
+        List<String> expected = Arrays.asList(
+                "2014-10-01 00:00:00.000"
+        );
+        rewriteAndAssertSQL(SQL_CDP, expected);
     }
 }
