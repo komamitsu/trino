@@ -303,6 +303,12 @@ public class CustomRewriterTest
     private void rewriteAndAssertSQL(String sql, List<String> expected)
         throws Throwable
     {
+        rewriteAndAssertSQL(sql, expected, null);
+    }
+
+    private void rewriteAndAssertSQL(String sql, List<String> expected, Integer expectedSize)
+        throws Throwable
+    {
         String tdApikey = System.getenv("TD_APIKEY");
         if (tdApikey == null) {
             System.err.println("TD_APIKEY isn't set. Skipping this test");
@@ -319,16 +325,18 @@ public class CustomRewriterTest
             ResultSet rs = stmt.getResultSet();
             List<String> actual = new ArrayList<>();
             // Extract data from result set
-            int count = 0;
             while (rs.next()) {
                 actual.add(rs.getString(1));
-                count++;
             }
-            System.out.println("result size: " + count);
+            if (expectedSize != null) {
+                assertEquals(expectedSize.intValue(), actual.size());
+            }
 
-            assertEquals(
-                    expected.stream().sorted().collect(Collectors.toList()),
-                    actual.stream().sorted().collect(Collectors.toList()));
+            if (expected != null) {
+                assertEquals(
+                        expected.stream().sorted().collect(Collectors.toList()),
+                        actual.stream().sorted().collect(Collectors.toList()));
+            }
         }
         catch (Throwable e) {
             e.printStackTrace();
@@ -415,9 +423,6 @@ public class CustomRewriterTest
     public void rewriteInvalidSQLForCDP()
             throws Throwable
     {
-        List<String> expected = Arrays.asList(
-                "2014-10-01 00:00:00.000"
-        );
-        rewriteAndAssertSQL(SQL_CDP, expected);
+        rewriteAndAssertSQL(SQL_CDP, null, 466);
     }
 }
