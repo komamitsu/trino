@@ -18,6 +18,8 @@ public class CustomRewriterTest
 {
     private static final String DB_URL = "jdbc:trino://api-development-presto.treasuredata.com:443/td-presto";
 
+    private static final String SQL_SIMPLE = "SELECT COUNT(1) FROM [sample_datasets].[nasdaq][nasdaq]";
+
     private static final String SQL_YEAR_AGGREGATION =
             "WITH tq_gnOjk2mbD_cTable AS (\n" +
                     "  SELECT *, from_unixtime(\"time\") as t\n" +
@@ -347,6 +349,14 @@ public class CustomRewriterTest
                 conn.close();
             }
         }
+    }
+
+    @Test
+    public void rewriteInvalidSimpleSQL()
+            throws Throwable
+    {
+        List<String> expected = Arrays.asList("8807280");
+        rewriteAndAssertSQL(SQL_SIMPLE, expected);
     }
 
     @Test

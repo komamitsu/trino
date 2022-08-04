@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 
 public final class ProtocolHeaders
 {
-    public static final ProtocolHeaders TRINO_HEADERS = new ProtocolHeaders("Presto");
+    public static final ProtocolHeaders TRINO_HEADERS = new ProtocolHeaders("Trino");
 
     private final String name;
     private final String prefix;

@@ -313,11 +313,13 @@ public class CustomRewriter
                         sb.append("second");
                     }
                     else {
-                        sb.append(id.replace("[", "\"").replace("]", "\""));
+                        // Add a space after double quote to handle `FROM [sample_datasets].[nasdaq][nasdaq]`
+                        sb.append(id.replace("[", "\"").replace("]", "\" "));
                     }
                 }
                 else {
-                    sb.append(id.replace("[", "\"").replace("]", "\""));
+                    // Add a space after double quote to handle `FROM [sample_datasets].[nasdaq][nasdaq]`
+                    sb.append(id.replace("[", "\"").replace("]", "\" "));
                 }
             }
             else {
