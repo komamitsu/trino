@@ -338,7 +338,7 @@ public class TrinoStatement
     public ResultSet getResultSet()
             throws SQLException
     {
-        logger.logMethodCall("Statement", "getResultSet");
+//        logger.logMethodCall("Statement", "getResultSet");
         checkOpen();
         return currentResult.get();
     }
